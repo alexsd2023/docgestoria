@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocGestoría · {% block title %}Panel{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <i class="ti ti-file-certificate"></i>
+    Doc<span>Gestoría</span>
+  </div>
+  <nav>
+    <div class="nav-section">Principal</div>
+    <a href="{{ url_for('dashboard') }}" class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+      <i class="ti ti-layout-dashboard"></i>Panel
+    </a>
+    <a href="{{ url_for('vista_clientes') }}" class="nav-item {% if active == 'clientes' %}active{% endif %}">
+      <i class="ti ti-users"></i>Clientes
+    </a>
+    <a href="{{ url_for('vista_documentos') }}" class="nav-item {% if active == 'documentos' %}active{% endif %}">
+      <i class="ti ti-file-upload"></i>Documentos
+      <span class="badge-count">3</span>
+    </a>
+    <div class="nav-section">Gestión</div>
+    <a href="{{ url_for('vista_expedientes') }}" class="nav-item {% if active == 'expedientes' %}active{% endif %}">
+      <i class="ti ti-folder"></i>Expedientes
+    </a>
+    <a href="{{ url_for('vista_notificaciones') }}" class="nav-item {% if active == 'notificaciones' %}active{% endif %}">
+      <i class="ti ti-bell"></i>Notificaciones
+    </a>
+    <div class="nav-section">Cuenta</div>
+    <a href="{{ url_for('vista_ajustes') }}" class="nav-item {% if active == 'ajustes' %}active{% endif %}">
+      <i class="ti ti-settings"></i>Ajustes
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="avatar blue">GR</div>
+      <div class="user-info">
+        <div class="user-name">Gestoría Ruiz</div>
+        <div class="user-role">Administrador</div>
+      </div>
+      <i class="ti ti-dots-vertical" style="color:var(--text-3);font-size:16px;cursor:pointer"></i>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">{% block page_title %}Panel principal{% endblock %}</div>
+    </div>
+    <div class="topbar-right">
+      <div class="search"><i class="ti ti-search"></i>Buscar...</div>
+      <div class="icon-btn"><i class="ti ti-bell"></i><div class="notif-dot"></div></div>
+      <button class="btn primary" onclick="openModal()">
+        <i class="ti ti-plus"></i>Nuevo cliente
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- MODAL NUEVO CLIENTE -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nuevo cliente</div>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" placeholder="María" id="f-nombre"></div>
+      <div class="form-group"><label class="form-label">Apellidos</label><input class="form-input" placeholder="García López" id="f-apellidos"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="cliente@email.com" id="f-email"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" placeholder="+34 600 000 000" id="f-tel"></div>
+      <div class="form-group"><label class="form-label">DNI</label><input class="form-input" placeholder="12345678A" id="f-dni"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo de trámite</label>
+      <select class="form-select" id="f-tramite">
+        <option>Constitución S.L.</option>
+        <option>Declaración renta</option>
+        <option>Autónomo alta</option>
+        <option>Herencia</option>
+        <option>Compraventa inmueble</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="submitNuevoCliente()"><i class="ti ti-plus"></i>Crear cliente</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toast-msg"></span></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones{% endblock %}
+{% block page_title %}Notificaciones{% endblock %}
+{% block content %}
+<div class="card" style="padding:20px">
+  {% for a in actividad %}
+  <div class="notif-row">
+    <div class="ndot {{ a.tipo }}"></div>
+    <div>
+      <div class="notif-text" style="font-size:13px">{{ a.texto }}</div>
+      <div class="notif-time">{{ a.tiempo }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

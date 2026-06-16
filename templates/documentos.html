@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Documentos{% endblock %}
+{% block page_title %}Documentos{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Documento</th><th>Cliente</th><th>Trámite</th><th>Subido</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for i, d in documentos %}
+        <tr>
+          <td>
+            <div class="doc-row" style="padding:0;border:none">
+              <div class="doc-icon">
+                <i class="ti {{ 'ti-file-type-pdf' if d.nombre.endswith('.pdf') else 'ti-file-text' }}"></i>
+              </div>
+              <div>
+                <div class="doc-name">{{ d.nombre }}</div>
+                <div class="doc-meta">{{ d.size }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ d.cliente }}</td>
+          <td>{{ d.tramite }}</td>
+          <td style="font-size:12px;color:var(--text-3)">{{ d.fecha }}</td>
+          <td>
+            {% if d.estado == 'pendiente' %}
+              <span class="badge pendiente"><i class="ti ti-clock"></i>Pendiente</span>
+            {% elif d.estado == 'aprobado' %}
+              <span class="badge completado"><i class="ti ti-check"></i>Aprobado</span>
+            {% else %}
+              <span class="badge rechazado"><i class="ti ti-x"></i>Rechazado</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-row">
+              {% if d.estado == 'pendiente' %}
+              <button class="action-btn blue"
+                onclick="accionDoc({{ i }}, 'aprobar', this)">Aprobar</button>
+              <button class="action-btn"
+                onclick="accionDoc({{ i }}, 'rechazar', this)">Rechazar</button>
+              {% else %}
+              <button class="action-btn" onclick="showToast('Descargando...')">Descargar</button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function accionDoc(idx, accion, btn) {
+  fetch(`/documentos/${idx}/${accion}`, { method: 'POST' })
+    .then(r => r.json())
+    .then(() => {
+      showToast(accion === 'aprobar' ? 'Documento aprobado ✓' : 'Documento rechazado');
+      setTimeout(() => location.reload(), 900);
+    });
+}
+</script>
+{% endblock %}

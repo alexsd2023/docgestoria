@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Ajustes{% endblock %}
+{% block page_title %}Ajustes{% endblock %}
+{% block content %}
+<div class="card" style="padding:24px;max-width:560px">
+  <div class="panel-title" style="margin-bottom:20px">Datos de la gestoría</div>
+  <div class="form-group"><label class="form-label">Nombre de la gestoría</label><input class="form-input" value="Gestoría Ruiz"></div>
+  <div class="form-group"><label class="form-label">CIF</label><input class="form-input" value="B12345678"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="info@gestoriaruiz.es"></div>
+    <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" value="+34 91 234 56 78"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" value="Calle Mayor 12, 28013 Madrid"></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:8px">
+    <button class="btn primary" onclick="showToast('Cambios guardados')"><i class="ti ti-device-floppy"></i>Guardar cambios</button>
+  </div>
+</div>
+{% endblock %}

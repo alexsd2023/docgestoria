@@ -1,0 +1,10 @@
+{% set estado = c.estado %}
+{% if estado == 'en-curso' %}
+  <span class="badge en-curso"><i class="ti ti-circle-dot"></i>En curso</span>
+{% elif estado == 'pendiente' %}
+  <span class="badge pendiente"><i class="ti ti-clock"></i>Pendiente</span>
+{% elif estado == 'completado' %}
+  <span class="badge completado"><i class="ti ti-check"></i>Completado</span>
+{% else %}
+  <span class="badge rechazado"><i class="ti ti-x"></i>Rechazado</span>
+{% endif %}

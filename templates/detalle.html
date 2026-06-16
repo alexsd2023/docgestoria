@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ cliente.nombre }}{% endblock %}
+{% block page_title %}Detalle de cliente{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:14px">
+  <a href="{{ url_for('vista_clientes') }}" class="btn"><i class="ti ti-arrow-left"></i>Volver a clientes</a>
+</div>
+
+<div class="detail-grid">
+  <div class="detail-main">
+    <div class="card" style="padding:20px">
+      <div class="client-header">
+        <div class="avatar-lg {{ cliente.color }}">{{ cliente.initials }}</div>
+        <div>
+          <div class="client-name-lg">{{ cliente.nombre }}</div>
+          <div class="client-tramite">{{ cliente.tramite }}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn"><i class="ti ti-message"></i>Mensaje</button>
+          <button class="btn primary" onclick="showToast('Notificación enviada al cliente')">
+            <i class="ti ti-send"></i>Solicitar doc
+          </button>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item"><label>Email</label><span>{{ cliente.email }}</span></div>
+        <div class="info-item"><label>Teléfono</label><span>{{ cliente.tel }}</span></div>
+        <div class="info-item"><label>DNI</label><span>{{ cliente.dni }}</span></div>
+        <div class="info-item"><label>Alta</label><span>{{ cliente.alta }}</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:20px">
+      <div class="section-header" style="margin-bottom:12px">
+        <div class="section-title">Documentos del expediente</div>
+        <button class="btn" onclick="showToast('Solicitud enviada al cliente')"><i class="ti ti-plus"></i>Pedir doc</button>
+      </div>
+      {% if docs %}
+        {% for d in docs %}
+        <div class="doc-list-item">
+          <div class="doc-status-icon {{ 'ok' if d.estado == 'aprobado' else 'wait' if d.estado == 'pendiente' else 'miss' }}">
+            <i class="ti {{ 'ti-check' if d.estado == 'aprobado' else 'ti-clock' }}"></i>
+          </div>
+          <div class="doc-list-name">{{ d.nombre }}</div>
+          {% if d.estado == 'aprobado' %}
+            <div class="doc-list-date">{{ d.fecha }}</div>
+          {% else %}
+            <button class="action-btn" onclick="showToast('Solicitud enviada')">Pedir</button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:24px;color:var(--text-3)">
+          <i class="ti ti-file-off" style="font-size:28px;display:block;margin-bottom:6px"></i>
+          Sin documentos aún
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="detail-sidebar">
+    <div class="card" style="padding:16px">
+      <div class="panel-title">Estado del trámite</div>
+      <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        {% set c = cliente %}{% include "partials/badge.html" %}
+        <span style="font-size:12px;color:var(--text-3)">{{ cliente.progreso }}%</span>
+      </div>
+      <div class="progress-bar" style="width:100%;height:6px;margin-bottom:16px">
+        <div class="progress-fill" style="width:{{ cliente.progreso }}%"></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot done"><i class="ti ti-check" style="font-size:9px"></i></div>
+        <div><div class="tl-text">Expediente abierto</div><div class="tl-time">{{ cliente.alta }}</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot {{ 'done' if cliente.progreso >= 30 else '' }}">
+          <i class="ti {{ 'ti-check' if cliente.progreso >= 30 else 'ti-point' }}" style="font-size:9px"></i>
+        </div>
+        <div><div class="tl-text" style="color:{{ 'var(--text)' if cliente.progreso >= 30 else 'var(--text-3)' }}">Docs iniciales recibidos</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot {{ 'done' if cliente.progreso >= 60 else '' }}">
+          <i class="ti {{ 'ti-check' if cliente.progreso >= 60 else 'ti-point' }}" style="font-size:9px"></i>
+        </div>
+        <div><div class="tl-text" style="color:{{ 'var(--text)' if cliente.progreso >= 60 else 'var(--text-3)' }}">Revisión en curso</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot {{ 'done' if cliente.progreso >= 90 else '' }}">
+          <i class="ti {{ 'ti-check' if cliente.progreso >= 90 else 'ti-point' }}" style="font-size:9px"></i>
+        </div>
+        <div><div class="tl-text" style="color:{{ 'var(--text)' if cliente.progreso >= 90 else 'var(--text-3)' }}">Trámite presentado</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot {{ 'done' if cliente.progreso == 100 else '' }}">
+          <i class="ti {{ 'ti-check' if cliente.progreso == 100 else 'ti-point' }}" style="font-size:9px"></i>
+        </div>
+        <div><div class="tl-text" style="color:{{ 'var(--text)' if cliente.progreso == 100 else 'var(--text-3)' }}">Expediente cerrado</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:16px">
+      <div class="panel-title">Notas internas</div>
+      <textarea class="form-input" rows="4" placeholder="Añade notas sobre este cliente..." style="resize:vertical"></textarea>
+      <button class="btn" style="margin-top:8px;width:100%;justify-content:center" onclick="showToast('Nota guardada')">
+        <i class="ti ti-device-floppy"></i>Guardar nota
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
