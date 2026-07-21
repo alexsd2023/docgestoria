@@ -9,8 +9,8 @@
         <tr><th>Referencia</th><th>Cliente</th><th>Trámite</th><th>Inicio</th><th>Estado</th></tr>
       </thead>
       <tbody>
-        {% for i, c in clientes %}
-        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=i) }}'" style="cursor:pointer">
+        {% for c in clientes %}
+        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=c.id) }}'" style="cursor:pointer">
           <td style="font-family:monospace;font-size:12px">#EXP-2025-0{{ 20 + loop.index }}</td>
           <td>
             <div class="client-cell">

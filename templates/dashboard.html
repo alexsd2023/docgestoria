@@ -45,8 +45,8 @@
         </tr>
       </thead>
       <tbody>
-        {% for i, c in clientes %}
-        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=i) }}'" style="cursor:pointer">
+        {% for c in clientes %}
+        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=c.id) }}'" style="cursor:pointer">
           <td>
             <div class="client-cell">
               <div class="avatar {{ c.color }}" style="width:30px;height:30px;font-size:11px">{{ c.initials }}</div>
@@ -64,7 +64,7 @@
           </td>
           <td>{% include "partials/badge.html" %}</td>
           <td>
-            <a href="{{ url_for('detalle_cliente', idx=i) }}" class="action-btn blue" onclick="event.stopPropagation()">Ver</a>
+            <a href="{{ url_for('detalle_cliente', idx=c.id) }}" class="action-btn blue" onclick="event.stopPropagation()">Ver</a>
           </td>
         </tr>
         {% endfor %}

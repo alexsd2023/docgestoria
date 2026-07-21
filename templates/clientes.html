@@ -22,8 +22,8 @@
         <tr><th>Cliente</th><th>Trámite</th><th>Teléfono</th><th>Alta</th><th>Estado</th><th></th></tr>
       </thead>
       <tbody>
-        {% for i, c in clientes %}
-        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=i) }}'" style="cursor:pointer">
+        {% for c in clientes %}
+        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=c.id) }}'" style="cursor:pointer">
           <td>
             <div class="client-cell">
               <div class="avatar {{ c.color }}" style="width:30px;height:30px;font-size:11px">{{ c.initials }}</div>
@@ -39,7 +39,7 @@
           <td>{% include "partials/badge.html" %}</td>
           <td>
             <div class="action-row">
-              <a href="{{ url_for('detalle_cliente', idx=i) }}" class="action-btn blue" onclick="event.stopPropagation()">Ver</a>
+              <a href="{{ url_for('detalle_cliente', idx=c.id) }}" class="action-btn blue" onclick="event.stopPropagation()">Ver</a>
               <button class="action-btn" onclick="event.stopPropagation();showToast('Notificación enviada')">Notificar</button>
             </div>
           </td>

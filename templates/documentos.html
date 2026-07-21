@@ -10,7 +10,7 @@
         <tr><th>Documento</th><th>Cliente</th><th>Trámite</th><th>Subido</th><th>Estado</th><th></th></tr>
       </thead>
       <tbody>
-        {% for i, d in documentos %}
+        {% for d in documentos %}
         <tr>
           <td>
             <div class="doc-row" style="padding:0;border:none">
@@ -39,9 +39,9 @@
             <div class="action-row">
               {% if d.estado == 'pendiente' %}
               <button class="action-btn blue"
-                onclick="accionDoc({{ i }}, 'aprobar', this)">Aprobar</button>
+                onclick="accionDoc({{ d.id }}, 'aprobar', this)">Aprobar</button>
               <button class="action-btn"
-                onclick="accionDoc({{ i }}, 'rechazar', this)">Rechazar</button>
+                onclick="accionDoc({{ d.id }}, 'rechazar', this)">Rechazar</button>
               {% else %}
               <button class="action-btn" onclick="showToast('Descargando...')">Descargar</button>
               {% endif %}
