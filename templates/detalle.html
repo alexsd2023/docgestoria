@@ -34,9 +34,69 @@
     <div class="card" style="padding:20px">
       <div class="section-header" style="margin-bottom:12px">
         <div class="section-title">Documentos del expediente</div>
-        <button class="btn" onclick="showToast('Solicitud enviada al cliente')"><i class="ti ti-plus"></i>Pedir doc</button>
+        {% if checklist %}
+          <span style="font-size:12px;color:var(--text-3)">{{ checklist | selectattr('doc') | list | length }}/{{ checklist | length }} aportados</span>
+        {% else %}
+          <button class="btn" onclick="showToast('Solicitud enviada al cliente')"><i class="ti ti-plus"></i>Pedir doc</button>
+        {% endif %}
       </div>
-      {% if docs %}
+
+      {% if checklist %}
+        {% for item in checklist %}
+        <div class="doc-list-item">
+          {% if item.doc and item.doc.estado == 'aprobado' %}
+            <div class="doc-status-icon ok"><i class="ti ti-check"></i></div>
+            <div class="doc-list-name">{{ item.tipo }}
+              <div style="font-size:11px;color:var(--text-3)">{{ item.doc.nombre }}</div>
+            </div>
+            <div class="doc-list-date">{{ item.doc.fecha }}</div>
+          {% elif item.doc and item.doc.estado == 'rechazado' %}
+            <div class="doc-status-icon miss"><i class="ti ti-x"></i></div>
+            <div class="doc-list-name">{{ item.tipo }}
+              <div style="font-size:11px;color:var(--text-3)">Rechazado · {{ item.doc.nombre }}</div>
+            </div>
+            <button class="action-btn" data-tipo="{{ item.tipo }}" onclick="solicitarDocumento({{ idx }}, this)">Pedir de nuevo</button>
+          {% elif item.doc %}
+            <div class="doc-status-icon wait"><i class="ti ti-clock"></i></div>
+            <div class="doc-list-name">{{ item.tipo }}
+              <div style="font-size:11px;color:var(--text-3)">Pendiente de revisión · {{ item.doc.nombre }}</div>
+            </div>
+            <div class="action-row">
+              <button class="action-btn blue" onclick="accionDoc({{ item.doc.id }}, 'aprobar', this)">Aprobar</button>
+              <button class="action-btn" onclick="accionDoc({{ item.doc.id }}, 'rechazar', this)">Rechazar</button>
+            </div>
+          {% else %}
+            <div class="doc-status-icon miss"><i class="ti ti-file-off"></i></div>
+            <div class="doc-list-name">{{ item.tipo }}
+              <div style="font-size:11px;color:var(--text-3)">No aportado</div>
+            </div>
+            <button class="action-btn" data-tipo="{{ item.tipo }}" onclick="solicitarDocumento({{ idx }}, this)">Pedir</button>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if otros_docs %}
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+          <div class="panel-title" style="margin-bottom:8px">Otros documentos aportados</div>
+          {% for d in otros_docs %}
+          <div class="doc-list-item">
+            <div class="doc-status-icon {{ 'ok' if d.estado == 'aprobado' else 'wait' if d.estado == 'pendiente' else 'miss' }}">
+              <i class="ti {{ 'ti-check' if d.estado == 'aprobado' else 'ti-clock' }}"></i>
+            </div>
+            <div class="doc-list-name">{{ d.nombre }}</div>
+            {% if d.estado == 'aprobado' %}
+              <div class="doc-list-date">{{ d.fecha }}</div>
+            {% else %}
+              <div class="action-row">
+                <button class="action-btn blue" onclick="accionDoc({{ d.id }}, 'aprobar', this)">Aprobar</button>
+                <button class="action-btn" onclick="accionDoc({{ d.id }}, 'rechazar', this)">Rechazar</button>
+              </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% elif docs %}
         {% for d in docs %}
         <div class="doc-list-item">
           <div class="doc-status-icon {{ 'ok' if d.estado == 'aprobado' else 'wait' if d.estado == 'pendiente' else 'miss' }}">

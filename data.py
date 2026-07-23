@@ -96,6 +96,19 @@ def actualizar_estado_documento(doc_id, estado):
         )
 
 
+def crear_documento(nombre, cliente_id, cliente, tramite, tipo, fecha, size, estado="pendiente"):
+    with get_cursor() as cur:
+        cur.execute(
+            """
+            insert into documentos (nombre, cliente_id, cliente, tramite, tipo, fecha, estado, size)
+            values (%s, %s, %s, %s, %s, %s, %s, %s)
+            returning *
+            """,
+            (nombre, cliente_id, cliente, tramite, tipo, fecha, estado, size),
+        )
+        return cur.fetchone()
+
+
 # ---------- actividad ----------
 
 def listar_actividad():

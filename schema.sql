@@ -22,11 +22,16 @@ create table if not exists documentos (
   cliente_id integer references clientes(id) on delete set null,
   cliente text,
   tramite text,
+  tipo text,
   fecha text,
   estado text not null default 'pendiente' check (estado in ('pendiente', 'aprobado', 'rechazado')),
   size text,
   created_at timestamptz not null default now()
 );
+
+-- Por si la tabla ya existía de una instalación previa sin la columna "tipo"
+-- (identifica a qué documento de la checklist del trámite corresponde cada archivo).
+alter table documentos add column if not exists tipo text;
 
 create table if not exists actividad (
   id serial primary key,
@@ -45,13 +50,13 @@ insert into clientes (nombre, email, tel, dni, tramite, estado, progreso, alta, 
   ('Laura Romero', 'laura.romero@email.com', '+34 667 890 123', '55667788E', 'Compraventa inmueble', 'en-curso', 55, '28 may 2025', 'LR', 'red')
 on conflict do nothing;
 
-insert into documentos (nombre, cliente_id, cliente, tramite, fecha, estado, size) values
-  ('DNI_mariagarcía.jpg', 1, 'María García', 'Constitución S.L.', 'Hoy 10:24', 'pendiente', '120 KB'),
-  ('escritura_contrato.pdf', 5, 'Laura Romero', 'Compraventa inmueble', 'Hoy 09:10', 'pendiente', '2.4 MB'),
-  ('modelo_036.pdf', 4, 'Pedro Martín', 'Autónomo alta', 'Ayer 17:02', 'pendiente', '340 KB'),
-  ('certificado_empadronamiento.pdf', 3, 'Ana Sánchez', 'Herencia', 'Lun 11:20', 'aprobado', '180 KB'),
-  ('DNI_reverso.jpg', 1, 'María García', 'Constitución S.L.', '12 jun 10:30', 'aprobado', '98 KB'),
-  ('IRPF_anterior.pdf', 2, 'Juan López', 'Declaración renta', '9 jun 14:00', 'aprobado', '560 KB')
+insert into documentos (nombre, cliente_id, cliente, tramite, tipo, fecha, estado, size) values
+  ('DNI_mariagarcía.jpg', 1, 'María García', 'Constitución S.L.', 'DNI/NIE de los socios', 'Hoy 10:24', 'pendiente', '120 KB'),
+  ('escritura_contrato.pdf', 5, 'Laura Romero', 'Compraventa inmueble', 'Escritura de compraventa', 'Hoy 09:10', 'pendiente', '2.4 MB'),
+  ('modelo_036.pdf', 4, 'Pedro Martín', 'Autónomo alta', 'Modelo 036/037', 'Ayer 17:02', 'pendiente', '340 KB'),
+  ('certificado_empadronamiento.pdf', 3, 'Ana Sánchez', 'Herencia', 'Certificado de empadronamiento', 'Lun 11:20', 'aprobado', '180 KB'),
+  ('DNI_reverso.jpg', 1, 'María García', 'Constitución S.L.', 'DNI/NIE de los socios', '12 jun 10:30', 'aprobado', '98 KB'),
+  ('IRPF_anterior.pdf', 2, 'Juan López', 'Declaración renta', 'Certificado de retenciones (IRPF)', '9 jun 14:00', 'aprobado', '560 KB')
 on conflict do nothing;
 
 insert into actividad (texto, tiempo, tipo) values

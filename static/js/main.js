@@ -30,6 +30,20 @@ function submitNuevoCliente() {
   });
 }
 
+function solicitarDocumento(clienteId, btn) {
+  const tipo = btn.dataset.tipo;
+  fetch(`/clientes/${clienteId}/documentos/solicitar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo }),
+  })
+  .then(r => r.json())
+  .then(() => {
+    showToast('Documento solicitado: ' + tipo);
+    setTimeout(() => location.reload(), 900);
+  });
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });

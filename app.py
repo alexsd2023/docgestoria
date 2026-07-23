@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import data
+import catalogo
 
 app = Flask(__name__)
 
@@ -38,9 +39,44 @@ def detalle_cliente(idx):
     if not cliente:
         return redirect(url_for("vista_clientes"))
     docs_cliente = data.listar_documentos_por_cliente(idx)
+    requeridos = catalogo.documentos_requeridos(cliente["tramite"])
+
+    checklist = []
+    tipos_requeridos = set(requeridos)
+    for tipo in requeridos:
+        doc = next((d for d in docs_cliente if d.get("tipo") == tipo), None)
+        checklist.append({"tipo": tipo, "doc": doc})
+
+    otros_docs = [d for d in docs_cliente if d.get("tipo") not in tipos_requeridos]
+
     return render_template(
-        "detalle.html", cliente=cliente, docs=docs_cliente, idx=idx, active="clientes"
+        "detalle.html",
+        cliente=cliente,
+        docs=docs_cliente,
+        checklist=checklist,
+        otros_docs=otros_docs,
+        idx=idx,
+        active="clientes",
     )
+
+
+@app.route("/clientes/<int:idx>/documentos/solicitar", methods=["POST"])
+def solicitar_documento(idx):
+    cliente = data.obtener_cliente(idx)
+    if not cliente:
+        return jsonify({"ok": False, "error": "cliente no encontrado"}), 404
+    body = request.get_json() or {}
+    tipo = body.get("tipo", "")
+    nuevo = data.crear_documento(
+        nombre=tipo,
+        cliente_id=idx,
+        cliente=cliente["nombre"],
+        tramite=cliente["tramite"],
+        tipo=tipo,
+        fecha="Hoy",
+        size="-",
+    )
+    return jsonify({"ok": True, "documento": nuevo})
 
 
 @app.route("/clientes/nuevo", methods=["POST"])
