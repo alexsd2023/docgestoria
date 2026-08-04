@@ -50,6 +50,17 @@ nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .search { display: flex; align-items: center; gap: 7px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; font-size: 13px; color: var(--text-3); width: 220px; cursor: text; }
 .search i { font-size: 15px; }
+
+.search-wrap { position: relative; }
+.search-wrap form { display: flex; align-items: center; gap: 7px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; width: 240px; }
+.search-wrap form i { font-size: 15px; color: var(--text-3); }
+.search-input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text); font-family: inherit; width: 100%; }
+.search-input::placeholder { color: var(--text-3); }
+.search-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,.14); max-height: 360px; overflow-y: auto; z-index: 30; }
+.search-dropdown.show { display: block; }
+.search-result-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; }
+.search-result-item:hover { background: var(--bg); }
+.search-empty { padding: 16px; text-align: center; color: var(--text-3); font-size: 13px; }
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); transition: background .15s; text-decoration: none; }
 .btn:hover { background: var(--bg); }
 .btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }

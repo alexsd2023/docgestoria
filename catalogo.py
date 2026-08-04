@@ -418,3 +418,10 @@ GRUPOS_TRAMITES = [
 
 def todos_los_tramites():
     return [t for _, tramites in GRUPOS_TRAMITES for t in tramites]
+
+
+def categoria_de_tramite(tramite):
+    for grupo, tramites in GRUPOS_TRAMITES:
+        if tramite in tramites:
+            return grupo
+    return "Otros"

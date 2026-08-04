@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Buscar{% endblock %}
+{% block page_title %}Resultados de búsqueda{% endblock %}
+{% block content %}
+
+<div class="page-toolbar">
+  <div style="font-size:13px;color:var(--text-3)">
+    {% if query %}
+      {{ clientes|length }} resultado{{ 's' if clientes|length != 1 else '' }} para "<strong style="color:var(--text)">{{ query }}</strong>"
+    {% else %}
+      Escribe algo en el buscador para empezar
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Cliente</th><th>Trámite</th><th>Teléfono</th><th>Alta</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for c in clientes %}
+        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=c.id) }}'" style="cursor:pointer">
+          <td>
+            <div class="client-cell">
+              <div class="avatar {{ c.color }}" style="width:30px;height:30px;font-size:11px">{{ c.initials }}</div>
+              <div>
+                <div class="name">{{ c.nombre }}</div>
+                <div class="email">{{ c.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ c.tramite }}</td>
+          <td style="color:var(--text-3)">{{ c.tel }}</td>
+          <td style="color:var(--text-3);font-size:12px">{{ c.alta }}</td>
+          <td>{% include "partials/badge.html" %}</td>
+          <td>
+            <a href="{{ url_for('detalle_cliente', idx=c.id) }}" class="action-btn blue" onclick="event.stopPropagation()">Ver</a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if query and not clientes %}
+        <tr>
+          <td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">
+            <i class="ti ti-search-off" style="font-size:32px;display:block;margin-bottom:8px"></i>
+            Sin resultados para "{{ query }}"
+          </td>
+        </tr>
+        {% endif %}
+        {% if not query %}
+        <tr>
+          <td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">
+            <i class="ti ti-search" style="font-size:32px;display:block;margin-bottom:8px"></i>
+            Busca por nombre, email, DNI, teléfono o trámite
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -32,6 +32,9 @@
     <a href="{{ url_for('vista_expedientes') }}" class="nav-item {% if active == 'expedientes' %}active{% endif %}">
       <i class="ti ti-folder"></i>Expedientes
     </a>
+    <a href="{{ url_for('vista_estadisticas') }}" class="nav-item {% if active == 'estadisticas' %}active{% endif %}">
+      <i class="ti ti-chart-bar"></i>Estadísticas
+    </a>
     <a href="{{ url_for('vista_notificaciones') }}" class="nav-item {% if active == 'notificaciones' %}active{% endif %}">
       <i class="ti ti-bell"></i>Notificaciones
     </a>
@@ -58,7 +61,20 @@
       <div class="page-title">{% block page_title %}Panel principal{% endblock %}</div>
     </div>
     <div class="topbar-right">
-      <div class="search"><i class="ti ti-search"></i>Buscar...</div>
+      <div class="search-wrap">
+        <form action="{{ url_for('vista_buscar') }}" method="get" id="search-form" autocomplete="off">
+          <i class="ti ti-search"></i>
+          <input
+            type="text"
+            name="q"
+            id="topbar-search"
+            class="search-input"
+            placeholder="Buscar clientes, DNI, trámite..."
+            value="{{ request.args.get('q', '') if active == 'buscar' else '' }}"
+          >
+        </form>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
       <div class="icon-btn"><i class="ti ti-bell"></i><div class="notif-dot"></div></div>
       <button class="btn primary" onclick="openModal()">
         <i class="ti ti-plus"></i>Nuevo cliente

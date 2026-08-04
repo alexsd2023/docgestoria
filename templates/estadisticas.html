@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Estadísticas{% endblock %}
+{% block page_title %}Estadísticas{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-users"></i>Total clientes</div>
+    <div class="stat-value">{{ total_clientes }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-file"></i>Total documentos</div>
+    <div class="stat-value">{{ total_documentos }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-checkbox"></i>Tasa de aprobación</div>
+    <div class="stat-value">{{ tasa_aprobacion }}%</div>
+    <div class="stat-sub">de los documentos aportados</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-progress"></i>Progreso medio</div>
+    <div class="stat-value">{{ progreso_medio }}%</div>
+    <div class="stat-sub">de los expedientes</div>
+  </div>
+</div>
+
+<div class="bottom-grid" style="margin-top:20px">
+  <div class="panel-card">
+    <div class="panel-title">Clientes por estado</div>
+    {% if total_clientes %}
+      <canvas id="chart-clientes-estado" height="220"></canvas>
+    {% else %}
+      <div style="text-align:center;padding:24px;color:var(--text-3)">Sin datos aún</div>
+    {% endif %}
+  </div>
+  <div class="panel-card">
+    <div class="panel-title">Documentos por estado</div>
+    {% if total_documentos %}
+      <canvas id="chart-docs-estado" height="220"></canvas>
+    {% else %}
+      <div style="text-align:center;padding:24px;color:var(--text-3)">Sin datos aún</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px;padding:20px">
+  <div class="panel-title">Trámites más frecuentes</div>
+  {% if por_tramite %}
+    <canvas id="chart-tramites" height="{{ 40 * por_tramite|length + 40 }}"></canvas>
+  {% else %}
+    <div style="text-align:center;padding:24px;color:var(--text-3)">Sin datos aún</div>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:20px">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Categoría</th><th>Clientes</th></tr></thead>
+      <tbody>
+        {% for cat, n in por_categoria %}
+        <tr><td>{{ cat }}</td><td>{{ n }}</td></tr>
+        {% endfor %}
+        {% if not por_categoria %}
+        <tr><td colspan="2" style="text-align:center;padding:24px;color:var(--text-3)">Sin datos aún</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+{% if total_clientes %}
+new Chart(document.getElementById('chart-clientes-estado'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Pendiente', 'En curso', 'Completado'],
+    datasets: [{
+      data: [{{ clientes_estado.pendiente }}, {{ clientes_estado['en-curso'] }}, {{ clientes_estado.completado }}],
+      backgroundColor: ['#f59e0b', '#3b82f6', '#22c55e'],
+      borderWidth: 0,
+    }],
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } },
+});
+{% endif %}
+
+{% if total_documentos %}
+new Chart(document.getElementById('chart-docs-estado'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Pendiente', 'Aprobado', 'Rechazado'],
+    datasets: [{
+      data: [{{ docs_estado.pendiente }}, {{ docs_estado.aprobado }}, {{ docs_estado.rechazado }}],
+      backgroundColor: ['#f59e0b', '#22c55e', '#ef4444'],
+      borderWidth: 0,
+    }],
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } },
+});
+{% endif %}
+
+{% if por_tramite %}
+new Chart(document.getElementById('chart-tramites'), {
+  type: 'bar',
+  data: {
+    labels: [{% for f in por_tramite %}{{ f.tramite | tojson }},{% endfor %}],
+    datasets: [{
+      label: 'Clientes',
+      data: [{% for f in por_tramite %}{{ f.n }},{% endfor %}],
+      backgroundColor: '#3b82f6',
+      borderRadius: 6,
+      barThickness: 18,
+    }],
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+  },
+});
+{% endif %}
+</script>
+{% endblock %}

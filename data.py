@@ -57,6 +57,50 @@ def contar_clientes_por_estado(estado):
         return cur.fetchone()["n"]
 
 
+def buscar_clientes(query, limit=None):
+    """Busca por nombre, email, DNI, teléfono o trámite (case-insensitive)."""
+    patron = f"%{query}%"
+    sql = """
+        select * from clientes
+        where nombre ilike %s
+           or email ilike %s
+           or dni ilike %s
+           or tel ilike %s
+           or tramite ilike %s
+        order by id desc
+    """
+    params = [patron, patron, patron, patron, patron]
+    if limit:
+        sql += " limit %s"
+        params.append(limit)
+    with get_cursor() as cur:
+        cur.execute(sql, params)
+        return cur.fetchall()
+
+
+def clientes_por_tramite():
+    with get_cursor() as cur:
+        cur.execute(
+            "select tramite, count(*) as n from clientes group by tramite order by n desc"
+        )
+        return cur.fetchall()
+
+
+def progreso_medio():
+    with get_cursor() as cur:
+        cur.execute("select coalesce(avg(progreso), 0) as avg from clientes")
+        return round(cur.fetchone()["avg"] or 0)
+
+
+def estadisticas_clientes_por_estado():
+    resultado = {"pendiente": 0, "en-curso": 0, "completado": 0}
+    with get_cursor() as cur:
+        cur.execute("select estado, count(*) as n from clientes group by estado")
+        for fila in cur.fetchall():
+            resultado[fila["estado"]] = fila["n"]
+    return resultado
+
+
 # ---------- documentos ----------
 
 def listar_documentos():
@@ -87,6 +131,21 @@ def contar_documentos_pendientes():
     with get_cursor() as cur:
         cur.execute("select count(*) as n from documentos where estado = 'pendiente'")
         return cur.fetchone()["n"]
+
+
+def contar_documentos():
+    with get_cursor() as cur:
+        cur.execute("select count(*) as n from documentos")
+        return cur.fetchone()["n"]
+
+
+def estadisticas_documentos_por_estado():
+    resultado = {"pendiente": 0, "aprobado": 0, "rechazado": 0}
+    with get_cursor() as cur:
+        cur.execute("select estado, count(*) as n from documentos group by estado")
+        for fila in cur.fetchall():
+            resultado[fila["estado"]] = fila["n"]
+    return resultado
 
 
 def actualizar_estado_documento(doc_id, estado):

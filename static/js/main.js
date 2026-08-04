@@ -47,3 +47,59 @@ function solicitarDocumento(clienteId, btn) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
+
+// ---- Buscador de la topbar ----
+(function () {
+  const input = document.getElementById('topbar-search');
+  const dropdown = document.getElementById('search-dropdown');
+  if (!input || !dropdown) return;
+
+  let temporizador = null;
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function buscarEnVivo(q) {
+    fetch(`/api/buscar?q=${encodeURIComponent(q)}`)
+      .then(r => r.json())
+      .then(data => {
+        const resultados = data.resultados || [];
+        if (resultados.length === 0) {
+          dropdown.innerHTML = '<div class="search-empty">Sin resultados</div>';
+        } else {
+          dropdown.innerHTML = resultados.map(c => `
+            <div class="search-result-item" onclick="window.location='/clientes/${c.id}'">
+              <div class="avatar ${escapeHtml(c.color)}" style="width:26px;height:26px;font-size:10px">${escapeHtml(c.initials)}</div>
+              <div style="min-width:0">
+                <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(c.nombre)}</div>
+                <div style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(c.tramite)}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+        dropdown.classList.add('show');
+      });
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(temporizador);
+    const q = input.value.trim();
+    if (q.length < 2) {
+      dropdown.classList.remove('show');
+      dropdown.innerHTML = '';
+      return;
+    }
+    temporizador = setTimeout(() => buscarEnVivo(q), 250);
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim().length >= 2 && dropdown.innerHTML) dropdown.classList.add('show');
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) dropdown.classList.remove('show');
+  });
+})();

@@ -125,6 +125,55 @@ def vista_expedientes():
     )
 
 
+@app.route("/buscar")
+def vista_buscar():
+    q = request.args.get("q", "").strip()
+    resultados = data.buscar_clientes(q) if q else []
+    return render_template("buscar.html", query=q, clientes=resultados, active="buscar")
+
+
+@app.route("/api/buscar")
+def api_buscar():
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify({"resultados": []})
+    resultados = data.buscar_clientes(q, limit=8)
+    return jsonify({"resultados": resultados})
+
+
+@app.route("/estadisticas")
+def vista_estadisticas():
+    total_clientes = data.contar_clientes()
+    total_documentos = data.contar_documentos()
+    clientes_estado = data.estadisticas_clientes_por_estado()
+    docs_estado = data.estadisticas_documentos_por_estado()
+    por_tramite = data.clientes_por_tramite()
+    progreso = data.progreso_medio()
+
+    tasa_aprobacion = (
+        round(docs_estado["aprobado"] / total_documentos * 100) if total_documentos else 0
+    )
+
+    por_categoria = {}
+    for fila in por_tramite:
+        cat = catalogo.categoria_de_tramite(fila["tramite"])
+        por_categoria[cat] = por_categoria.get(cat, 0) + fila["n"]
+    por_categoria = sorted(por_categoria.items(), key=lambda item: -item[1])
+
+    return render_template(
+        "estadisticas.html",
+        total_clientes=total_clientes,
+        total_documentos=total_documentos,
+        clientes_estado=clientes_estado,
+        docs_estado=docs_estado,
+        por_tramite=por_tramite[:10],
+        por_categoria=por_categoria,
+        progreso_medio=progreso,
+        tasa_aprobacion=tasa_aprobacion,
+        active="estadisticas",
+    )
+
+
 @app.route("/notificaciones")
 def vista_notificaciones():
     actividad = data.listar_actividad()
