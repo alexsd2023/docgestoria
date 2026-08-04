@@ -44,6 +44,26 @@ function solicitarDocumento(clienteId, btn) {
   });
 }
 
+function subirArchivoChecklist(clienteId, inputEl) {
+  const archivo = inputEl.files[0];
+  if (!archivo) return;
+  const tipo = inputEl.dataset.tipo;
+  const form = new FormData();
+  form.append('archivo', archivo);
+  form.append('tipo', tipo);
+  showToast('Subiendo archivo...');
+  fetch(`/clientes/${clienteId}/documentos/subir`, { method: 'POST', body: form })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        showToast('Archivo subido ✓');
+        setTimeout(() => location.reload(), 900);
+      } else {
+        showToast(data.error || 'Error al subir el archivo');
+      }
+    });
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });

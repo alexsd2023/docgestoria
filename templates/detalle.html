@@ -37,7 +37,7 @@
         {% if checklist %}
           <span style="font-size:12px;color:var(--text-3)">{{ checklist | selectattr('doc') | list | length }}/{{ checklist | length }} aportados</span>
         {% else %}
-          <button class="btn" onclick="showToast('Solicitud enviada al cliente')"><i class="ti ti-plus"></i>Pedir doc</button>
+          <button class="btn" onclick="showToast('Solicitud enviada al cliente')"><i class="ti ti-plus"></i>Solicitar doc</button>
         {% endif %}
       </div>
 
@@ -55,7 +55,11 @@
             <div class="doc-list-name">{{ item.tipo }}
               <div style="font-size:11px;color:var(--text-3)">Rechazado · {{ item.doc.nombre }}</div>
             </div>
-            <button class="action-btn" data-tipo="{{ item.tipo }}" onclick="solicitarDocumento({{ idx }}, this)">Pedir de nuevo</button>
+            <div class="action-row">
+              <button class="action-btn" data-tipo="{{ item.tipo }}" onclick="solicitarDocumento({{ idx }}, this)">Solicitar de nuevo</button>
+              <button class="action-btn" onclick="document.getElementById('subir-{{ loop.index }}').click()">Subir archivo</button>
+              <input type="file" id="subir-{{ loop.index }}" style="display:none" data-tipo="{{ item.tipo }}" onchange="subirArchivoChecklist({{ idx }}, this)">
+            </div>
           {% elif item.doc %}
             <div class="doc-status-icon wait"><i class="ti ti-clock"></i></div>
             <div class="doc-list-name">{{ item.tipo }}
@@ -70,7 +74,11 @@
             <div class="doc-list-name">{{ item.tipo }}
               <div style="font-size:11px;color:var(--text-3)">No aportado</div>
             </div>
-            <button class="action-btn" data-tipo="{{ item.tipo }}" onclick="solicitarDocumento({{ idx }}, this)">Pedir</button>
+            <div class="action-row">
+              <button class="action-btn" data-tipo="{{ item.tipo }}" onclick="solicitarDocumento({{ idx }}, this)">Solicitar</button>
+              <button class="action-btn" onclick="document.getElementById('subir-{{ loop.index }}').click()">Subir archivo</button>
+              <input type="file" id="subir-{{ loop.index }}" style="display:none" data-tipo="{{ item.tipo }}" onchange="subirArchivoChecklist({{ idx }}, this)">
+            </div>
           {% endif %}
         </div>
         {% endfor %}
@@ -106,7 +114,7 @@
           {% if d.estado == 'aprobado' %}
             <div class="doc-list-date">{{ d.fecha }}</div>
           {% else %}
-            <button class="action-btn" onclick="showToast('Solicitud enviada')">Pedir</button>
+            <button class="action-btn" onclick="showToast('Solicitud enviada')">Solicitar</button>
           {% endif %}
         </div>
         {% endfor %}

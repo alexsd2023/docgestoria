@@ -80,6 +80,44 @@ def solicitar_documento(idx):
     return jsonify({"ok": True, "documento": nuevo})
 
 
+@app.route("/clientes/<int:idx>/documentos/subir", methods=["POST"])
+def subir_documento_checklist(idx):
+    """Sube directamente el archivo de un documento de la checklist (crea el
+    registro y lo adjunta al bucket Tramites en un solo paso)."""
+    cliente = data.obtener_cliente(idx)
+    if not cliente:
+        return jsonify({"ok": False, "error": "Cliente no encontrado"}), 404
+
+    tipo = request.form.get("tipo", "")
+    archivo = request.files.get("archivo")
+    if not archivo or not archivo.filename:
+        return jsonify({"ok": False, "error": "No se ha seleccionado ningún archivo"}), 400
+
+    contenido = archivo.read()
+    tamano = len(contenido)
+    size_legible = (
+        f"{tamano / 1024:.0f} KB" if tamano < 1024 * 1024 else f"{tamano / 1024 / 1024:.1f} MB"
+    )
+
+    nuevo = data.crear_documento(
+        nombre=archivo.filename,
+        cliente_id=idx,
+        cliente=cliente["nombre"],
+        tramite=cliente["tramite"],
+        tipo=tipo,
+        fecha="Hoy",
+        size=size_legible,
+    )
+
+    path = f"{idx}/{nuevo['id']}_{archivo.filename}"
+    ok, error = storage.subir_archivo(path, contenido, archivo.filename)
+    if not ok:
+        return jsonify({"ok": False, "error": error}), 500
+
+    data.actualizar_archivo_documento(nuevo["id"], path)
+    return jsonify({"ok": True})
+
+
 @app.route("/clientes/nuevo", methods=["POST"])
 def nuevo_cliente():
     body = request.get_json()
