@@ -185,5 +185,10 @@ def vista_ajustes():
     return render_template("ajustes.html", active="ajustes")
 
 
+@app.route("/facturacion")
+def vista_facturacion():
+    return render_template("facturacion.html", facturas=[], active="facturacion")
+
+
 if __name__ == "__main__":
     app.run(debug=True)

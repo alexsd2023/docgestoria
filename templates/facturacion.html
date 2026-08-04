@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Facturación{% endblock %}
+{% block page_title %}Facturación{% endblock %}
+{% block content %}
+
+<div class="page-toolbar">
+  <div style="font-size:13px;color:var(--text-3)">
+    {{ facturas|length }} factura{{ 's' if facturas|length != 1 else '' }}
+  </div>
+  <button class="btn primary" onclick="showToast('Función de facturación próximamente')">
+    <i class="ti ti-plus"></i>Nueva factura
+  </button>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Nº Factura</th><th>Cliente</th><th>Concepto</th><th>Fecha</th><th>Importe</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for f in facturas %}
+        <tr>
+          <td style="font-family:monospace;font-size:12px">{{ f.numero }}</td>
+          <td>{{ f.cliente }}</td>
+          <td>{{ f.concepto }}</td>
+          <td style="color:var(--text-3);font-size:12px">{{ f.fecha }}</td>
+          <td>{{ f.importe }} €</td>
+          <td>{{ f.estado }}</td>
+          <td><button class="action-btn" onclick="showToast('Descargando...')">Descargar</button></td>
+        </tr>
+        {% endfor %}
+        {% if not facturas %}
+        <tr>
+          <td colspan="7" style="text-align:center;padding:40px;color:var(--text-3)">
+            <i class="ti ti-receipt-off" style="font-size:32px;display:block;margin-bottom:8px"></i>
+            Todavía no hay facturas
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
