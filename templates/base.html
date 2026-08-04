@@ -117,62 +117,7 @@
     <div class="form-group">
       <label class="form-label">Tipo de trámite</label>
       <select class="form-select" id="f-tramite">
-        <optgroup label="General">
-          <option>Constitución S.L.</option>
-          <option>Declaración renta</option>
-          <option>Autónomo alta</option>
-          <option>Herencia</option>
-          <option>Compraventa inmueble</option>
-        </optgroup>
-        <optgroup label="Extranjería · NIE y Registro UE">
-          <option>Obtención de NIE</option>
-          <option>Certificado de Registro de la UE</option>
-          <option>Tarjeta de Familiar de Ciudadano de la UE</option>
-          <option>Empadronamiento</option>
-        </optgroup>
-        <optgroup label="Extranjería · Residencia">
-          <option>Residencia Temporal No Lucrativa</option>
-          <option>Residencia y Trabajo por Cuenta Ajena</option>
-          <option>Personal Altamente Cualificado</option>
-          <option>Residencia y Trabajo por Cuenta Propia</option>
-          <option>Residencia por Circunstancias Excepcionales</option>
-          <option>Residencia de Larga Duración</option>
-          <option>Reagrupación Familiar</option>
-        </optgroup>
-        <optgroup label="Arraigos">
-          <option>Arraigo Social</option>
-          <option>Arraigo Laboral</option>
-          <option>Arraigo Familiar</option>
-          <option>Arraigo para la Formación</option>
-        </optgroup>
-        <optgroup label="Estudiantes">
-          <option>Estancia por Estudios</option>
-          <option>Visado de Estudios</option>
-          <option>Prácticas No Laborales y Formativas</option>
-          <option>Modificación de Residencia y Trabajo</option>
-          <option>Permiso de Trabajo Implícito</option>
-        </optgroup>
-        <optgroup label="Nacionalidad">
-          <option>Nacionalidad por Residencia</option>
-          <option>Nacionalidad por Carta de Naturaleza</option>
-          <option>Pruebas CCSE y DELE</option>
-          <option>Ley de Memoria Democrática</option>
-        </optgroup>
-        <optgroup label="Recursos y Reclamaciones">
-          <option>Recurso de Reposición</option>
-          <option>Recurso de Alzada</option>
-          <option>Recurso Contencioso-Administrativo</option>
-          <option>Reclamaciones por Silencio Administrativo</option>
-        </optgroup>
-        <optgroup label="Tráfico">
-          <option>Transferencia y Cambio de Titularidad</option>
-          <option>Matriculación de Vehículos Nuevos</option>
-          <option>Duplicados de Permiso de Circulación y Conducir</option>
-          <option>Bajas de Vehículos</option>
-          <option>Informes y Notificaciones DGT</option>
-          <option>Cambios Técnicos y Reformas</option>
-        </optgroup>
-        <option>Otro</option>
+        {% include "partials/opciones_tramite.html" %}
       </select>
     </div>
     <div class="modal-footer">

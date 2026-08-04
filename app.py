@@ -97,6 +97,38 @@ def nuevo_cliente():
     return jsonify({"ok": True, "nombre": nuevo["nombre"]})
 
 
+@app.route("/clientes/<int:idx>/editar", methods=["POST"])
+def editar_cliente(idx):
+    cliente = data.obtener_cliente(idx)
+    if not cliente:
+        return jsonify({"ok": False, "error": "Cliente no encontrado"}), 404
+    body = request.get_json() or {}
+    actualizado = data.actualizar_cliente(
+        idx,
+        nombre=body.get("nombre", cliente["nombre"]),
+        email=body.get("email", cliente["email"]),
+        tel=body.get("tel", cliente["tel"]),
+        dni=body.get("dni", cliente["dni"]),
+        tramite=body.get("tramite", cliente["tramite"]),
+    )
+    return jsonify({"ok": True, "cliente": actualizado})
+
+
+@app.route("/clientes/<int:idx>/borrar", methods=["POST"])
+def borrar_cliente(idx):
+    cliente = data.obtener_cliente(idx)
+    if not cliente:
+        return jsonify({"ok": False, "error": "Cliente no encontrado"}), 404
+    data.eliminar_cliente(idx)
+    return jsonify({"ok": True})
+
+
+@app.route("/clientes/borrar-todos", methods=["POST"])
+def borrar_todos_clientes():
+    data.eliminar_todos_clientes()
+    return jsonify({"ok": True})
+
+
 @app.route("/documentos")
 def vista_documentos():
     documentos = data.listar_documentos()

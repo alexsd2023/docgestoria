@@ -19,7 +19,7 @@ create table if not exists clientes (
 create table if not exists documentos (
   id serial primary key,
   nombre text not null,
-  cliente_id integer references clientes(id) on delete set null,
+  cliente_id integer references clientes(id) on delete cascade,
   cliente text,
   tramite text,
   tipo text,
@@ -34,6 +34,12 @@ create table if not exists documentos (
 alter table documentos add column if not exists tipo text;
 -- Ruta del archivo real dentro del bucket "Tramites" de Supabase Storage.
 alter table documentos add column if not exists archivo_path text;
+-- Borrado en cascada: al eliminar un cliente se eliminan sus documentos
+-- (por si la tabla ya existía con ON DELETE SET NULL).
+alter table documentos drop constraint if exists documentos_cliente_id_fkey;
+alter table documentos
+  add constraint documentos_cliente_id_fkey
+  foreign key (cliente_id) references clientes(id) on delete cascade;
 
 create table if not exists actividad (
   id serial primary key,

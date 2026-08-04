@@ -45,6 +45,32 @@ def crear_cliente(nombre, email, tel, dni, tramite, initials, color="blue"):
         return cur.fetchone()
 
 
+def actualizar_cliente(cliente_id, nombre, email, tel, dni, tramite):
+    with get_cursor() as cur:
+        cur.execute(
+            """
+            update clientes
+            set nombre = %s, email = %s, tel = %s, dni = %s, tramite = %s
+            where id = %s
+            returning *
+            """,
+            (nombre, email, tel, dni, tramite, cliente_id),
+        )
+        return cur.fetchone()
+
+
+def eliminar_cliente(cliente_id):
+    """Borra el cliente. Sus documentos se borran en cascada (FK ON DELETE CASCADE)."""
+    with get_cursor() as cur:
+        cur.execute("delete from clientes where id = %s", (cliente_id,))
+
+
+def eliminar_todos_clientes():
+    """Borra todos los clientes. Sus documentos se borran en cascada."""
+    with get_cursor() as cur:
+        cur.execute("delete from clientes")
+
+
 def contar_clientes():
     with get_cursor() as cur:
         cur.execute("select count(*) as n from clientes")
