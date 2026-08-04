@@ -109,6 +109,29 @@ def listar_documentos():
         return cur.fetchall()
 
 
+def clientes_de_documentos():
+    """Nombres de clientes distintos que tienen al menos un documento (para el filtro)."""
+    with get_cursor() as cur:
+        cur.execute(
+            "select distinct cliente from documentos where cliente is not null order by cliente"
+        )
+        return [fila["cliente"] for fila in cur.fetchall()]
+
+
+def obtener_documento(doc_id):
+    with get_cursor() as cur:
+        cur.execute("select * from documentos where id = %s", (doc_id,))
+        return cur.fetchone()
+
+
+def actualizar_archivo_documento(doc_id, archivo_path):
+    with get_cursor() as cur:
+        cur.execute(
+            "update documentos set archivo_path = %s where id = %s",
+            (archivo_path, doc_id),
+        )
+
+
 def listar_documentos_por_cliente(cliente_id):
     with get_cursor() as cur:
         cur.execute(

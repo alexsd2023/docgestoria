@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import data
 import catalogo
+import storage
 
 app = Flask(__name__)
 
@@ -99,7 +100,13 @@ def nuevo_cliente():
 @app.route("/documentos")
 def vista_documentos():
     documentos = data.listar_documentos()
-    return render_template("documentos.html", documentos=documentos, active="documentos")
+    return render_template(
+        "documentos.html",
+        documentos=documentos,
+        grupos_tramites=catalogo.GRUPOS_TRAMITES,
+        clientes_documentos=data.clientes_de_documentos(),
+        active="documentos",
+    )
 
 
 @app.route("/documentos/<int:idx>/aprobar", methods=["POST"])
@@ -112,6 +119,56 @@ def aprobar_doc(idx):
 def rechazar_doc(idx):
     data.actualizar_estado_documento(idx, "rechazado")
     return jsonify({"ok": True})
+
+
+@app.route("/documentos/<int:idx>/archivo", methods=["POST"])
+def subir_archivo_documento(idx):
+    documento = data.obtener_documento(idx)
+    if not documento:
+        return jsonify({"ok": False, "error": "Documento no encontrado"}), 404
+
+    archivo = request.files.get("archivo")
+    if not archivo or not archivo.filename:
+        return jsonify({"ok": False, "error": "No se ha seleccionado ningún archivo"}), 400
+
+    cliente_id = documento.get("cliente_id") or "sin-cliente"
+    path = f"{cliente_id}/{idx}_{archivo.filename}"
+    ok, error = storage.subir_archivo(path, archivo.read(), archivo.filename)
+    if not ok:
+        return jsonify({"ok": False, "error": error}), 500
+
+    data.actualizar_archivo_documento(idx, path)
+    return jsonify({"ok": True, "archivo_path": path})
+
+
+@app.route("/documentos/<int:idx>/descargar")
+def descargar_documento(idx):
+    documento = data.obtener_documento(idx)
+    if not documento or not documento.get("archivo_path"):
+        return "Este documento no tiene ningún archivo adjunto todavía.", 404
+
+    url, error = storage.url_firmada(
+        documento["archivo_path"],
+        forzar_descarga=True,
+        nombre_descarga=documento["nombre"],
+    )
+    if error:
+        return f"No se pudo generar el enlace de descarga: {error}", 500
+    return redirect(url)
+
+
+@app.route("/documentos/<int:idx>/url-previa")
+def url_previa_documento(idx):
+    documento = data.obtener_documento(idx)
+    if not documento:
+        return jsonify({"ok": False, "error": "Documento no encontrado"}), 404
+    if not documento.get("archivo_path"):
+        return jsonify({"ok": True, "url": None})
+
+    url, error = storage.url_firmada(documento["archivo_path"])
+    if error:
+        return jsonify({"ok": False, "error": error}), 500
+    return jsonify({"ok": True, "url": url, "nombre": documento["nombre"]})
 
 
 @app.route("/expedientes")

@@ -26,12 +26,14 @@ create table if not exists documentos (
   fecha text,
   estado text not null default 'pendiente' check (estado in ('pendiente', 'aprobado', 'rechazado')),
   size text,
+  archivo_path text,
   created_at timestamptz not null default now()
 );
 
--- Por si la tabla ya existía de una instalación previa sin la columna "tipo"
--- (identifica a qué documento de la checklist del trámite corresponde cada archivo).
+-- Por si la tabla ya existía de una instalación previa sin estas columnas.
 alter table documentos add column if not exists tipo text;
+-- Ruta del archivo real dentro del bucket "Tramites" de Supabase Storage.
+alter table documentos add column if not exists archivo_path text;
 
 create table if not exists actividad (
   id serial primary key,

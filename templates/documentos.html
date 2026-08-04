@@ -3,15 +3,73 @@
 {% block page_title %}Documentos{% endblock %}
 
 {% block content %}
+<div class="page-toolbar">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <details class="filter-dropdown" id="dd-doc-estado">
+      <summary class="btn"><i class="ti ti-filter"></i>Estado<span class="filter-badge" id="doc-estado-badge" style="display:none"></span></summary>
+      <div class="filter-panel" style="width:180px">
+        <div class="filter-panel-actions">
+          <button type="button" class="filter-link" onclick="marcarTodos('.fd-estado', true)">Todos</button>
+          <button type="button" class="filter-link" onclick="marcarTodos('.fd-estado', false)">Ninguno</button>
+        </div>
+        <label class="filter-check"><input type="checkbox" class="fd-estado" value="pendiente" checked onchange="aplicarFiltrosDocumentos()"> Pendiente</label>
+        <label class="filter-check"><input type="checkbox" class="fd-estado" value="aprobado" checked onchange="aplicarFiltrosDocumentos()"> Aprobado</label>
+        <label class="filter-check"><input type="checkbox" class="fd-estado" value="rechazado" checked onchange="aplicarFiltrosDocumentos()"> Rechazado</label>
+      </div>
+    </details>
+
+    <details class="filter-dropdown" id="dd-doc-tramite">
+      <summary class="btn"><i class="ti ti-filter"></i>Trámite<span class="filter-badge" id="doc-tramite-badge" style="display:none"></span></summary>
+      <div class="filter-panel">
+        <div class="filter-panel-actions">
+          <button type="button" class="filter-link" onclick="marcarTodos('.fd-tramite', true)">Todos</button>
+          <button type="button" class="filter-link" onclick="marcarTodos('.fd-tramite', false)">Ninguno</button>
+        </div>
+        {% for grupo, tramites in grupos_tramites %}
+        <div class="filter-group">
+          <div class="filter-group-title">{{ grupo }}</div>
+          {% for t in tramites %}
+          <label class="filter-check">
+            <input type="checkbox" class="fd-tramite" value="{{ t }}" checked onchange="aplicarFiltrosDocumentos()">
+            {{ t }}
+          </label>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+
+    <details class="filter-dropdown" id="dd-doc-cliente">
+      <summary class="btn"><i class="ti ti-filter"></i>Cliente<span class="filter-badge" id="doc-cliente-badge" style="display:none"></span></summary>
+      <div class="filter-panel" style="width:220px">
+        <div class="filter-panel-actions">
+          <button type="button" class="filter-link" onclick="marcarTodos('.fd-cliente', true)">Todos</button>
+          <button type="button" class="filter-link" onclick="marcarTodos('.fd-cliente', false)">Ninguno</button>
+        </div>
+        {% for c in clientes_documentos %}
+        <label class="filter-check">
+          <input type="checkbox" class="fd-cliente" value="{{ c }}" checked onchange="aplicarFiltrosDocumentos()">
+          {{ c }}
+        </label>
+        {% endfor %}
+        {% if not clientes_documentos %}
+        <div class="search-empty">Sin clientes</div>
+        {% endif %}
+      </div>
+    </details>
+  </div>
+  <span id="doc-filter-resumen" style="font-size:12px;color:var(--text-3)"></span>
+</div>
+
 <div class="card">
   <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Documento</th><th>Cliente</th><th>Trámite</th><th>Subido</th><th>Estado</th><th></th></tr>
       </thead>
-      <tbody>
+      <tbody id="tabla-documentos">
         {% for d in documentos %}
-        <tr>
+        <tr data-estado="{{ d.estado }}" data-tramite="{{ d.tramite }}" data-cliente="{{ d.cliente }}">
           <td>
             <div class="doc-row" style="padding:0;border:none">
               <div class="doc-icon">
@@ -37,20 +95,49 @@
           </td>
           <td>
             <div class="action-row">
+              <button class="action-btn" title="Vista previa" data-doc-id="{{ d.id }}" data-doc-nombre="{{ d.nombre }}" onclick="abrirPreview(this.dataset.docId, this.dataset.docNombre)"><i class="ti ti-eye"></i></button>
               {% if d.estado == 'pendiente' %}
               <button class="action-btn blue"
                 onclick="accionDoc({{ d.id }}, 'aprobar', this)">Aprobar</button>
               <button class="action-btn"
                 onclick="accionDoc({{ d.id }}, 'rechazar', this)">Rechazar</button>
+              {% endif %}
+              {% if d.archivo_path %}
+              <a class="action-btn" href="{{ url_for('descargar_documento', idx=d.id) }}">Descargar</a>
               {% else %}
-              <button class="action-btn" onclick="showToast('Descargando...')">Descargar</button>
+              <button class="action-btn" onclick="document.getElementById('file-{{ d.id }}').click()">Subir archivo</button>
+              <input type="file" id="file-{{ d.id }}" style="display:none" onchange="subirArchivo({{ d.id }}, this)">
               {% endif %}
             </div>
           </td>
         </tr>
         {% endfor %}
+        <tr id="doc-sin-resultados" style="display:none">
+          <td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">
+            <i class="ti ti-filter-off" style="font-size:28px;display:block;margin-bottom:6px"></i>
+            Ningún documento coincide con los filtros seleccionados
+          </td>
+        </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- MODAL VISTA PREVIA -->
+<div class="modal-overlay" id="modal-preview">
+  <div class="modal" style="width:640px">
+    <div class="modal-header">
+      <div class="modal-title" id="preview-title">Vista previa</div>
+      <button class="modal-close" onclick="cerrarPreview()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="preview-body" style="min-height:280px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:var(--radius);overflow:hidden">
+      <div style="color:var(--text-3);font-size:13px">Cargando...</div>
+    </div>
+    <input type="file" id="preview-file-input" style="display:none">
+    <div class="modal-footer">
+      <button class="btn" onclick="cerrarPreview()">Cerrar</button>
+      <a class="btn primary" id="preview-descargar" href="#" style="display:none"><i class="ti ti-download"></i>Descargar</a>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -63,6 +150,121 @@ function accionDoc(idx, accion, btn) {
     .then(() => {
       showToast(accion === 'aprobar' ? 'Documento aprobado ✓' : 'Documento rechazado');
       setTimeout(() => location.reload(), 900);
+    });
+}
+
+function marcarTodos(selector, valor) {
+  document.querySelectorAll(selector).forEach(cb => { cb.checked = valor; });
+  aplicarFiltrosDocumentos();
+}
+
+function aplicarFiltrosDocumentos() {
+  const estadoChecks = document.querySelectorAll('.fd-estado');
+  const tramiteChecks = document.querySelectorAll('.fd-tramite');
+  const clienteChecks = document.querySelectorAll('.fd-cliente');
+
+  const estadoOn = new Set(Array.from(estadoChecks).filter(cb => cb.checked).map(cb => cb.value));
+  const tramiteOn = new Set(Array.from(tramiteChecks).filter(cb => cb.checked).map(cb => cb.value));
+  const clienteOn = new Set(Array.from(clienteChecks).filter(cb => cb.checked).map(cb => cb.value));
+
+  const filas = document.querySelectorAll('#tabla-documentos tr[data-estado]');
+  let visibles = 0;
+  filas.forEach(fila => {
+    const mostrar = estadoOn.has(fila.dataset.estado)
+      && tramiteOn.has(fila.dataset.tramite)
+      && clienteOn.has(fila.dataset.cliente);
+    fila.style.display = mostrar ? '' : 'none';
+    if (mostrar) visibles++;
+  });
+
+  document.getElementById('doc-sin-resultados').style.display = visibles === 0 ? '' : 'none';
+  document.getElementById('doc-filter-resumen').textContent = `${visibles} de ${filas.length} documentos`;
+
+  const badge = (id, on, total) => {
+    const el = document.getElementById(id);
+    if (on < total) { el.textContent = on; el.style.display = ''; }
+    else { el.style.display = 'none'; }
+  };
+  badge('doc-estado-badge', estadoOn.size, estadoChecks.length);
+  badge('doc-tramite-badge', tramiteOn.size, tramiteChecks.length);
+  badge('doc-cliente-badge', clienteOn.size, clienteChecks.length);
+}
+
+document.addEventListener('click', function (e) {
+  document.querySelectorAll('.filter-dropdown[open]').forEach(function (d) {
+    if (!d.contains(e.target)) d.removeAttribute('open');
+  });
+});
+
+document.addEventListener('DOMContentLoaded', aplicarFiltrosDocumentos);
+
+// ---- Vista previa / subida de archivo ----
+let previewDocId = null;
+
+function abrirPreview(id, nombre) {
+  previewDocId = id;
+  document.getElementById('preview-title').textContent = nombre;
+  const body = document.getElementById('preview-body');
+  const descargarBtn = document.getElementById('preview-descargar');
+  body.innerHTML = '<div style="color:var(--text-3);font-size:13px">Cargando...</div>';
+  descargarBtn.style.display = 'none';
+  document.getElementById('modal-preview').classList.add('open');
+
+  fetch(`/documentos/${id}/url-previa`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        body.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:20px">${data.error || 'No se pudo cargar la vista previa'}</div>`;
+        return;
+      }
+      if (!data.url) {
+        body.innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <i class="ti ti-file-off" style="font-size:32px;color:var(--text-3);display:block;margin-bottom:8px"></i>
+            <div style="color:var(--text-3);font-size:13px;margin-bottom:12px">Este documento no tiene ningún archivo adjunto todavía</div>
+            <button class="btn primary" onclick="document.getElementById('preview-file-input').click()"><i class="ti ti-upload"></i>Subir archivo</button>
+          </div>`;
+        return;
+      }
+      const esImagen = /\.(png|jpe?g|gif|webp)$/i.test(nombre);
+      const esPdf = /\.pdf$/i.test(nombre);
+      if (esImagen) {
+        body.innerHTML = `<img src="${data.url}" style="max-width:100%;max-height:480px;border-radius:var(--radius)">`;
+      } else if (esPdf) {
+        body.innerHTML = `<iframe src="${data.url}" style="width:100%;height:480px;border:none"></iframe>`;
+      } else {
+        body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-3)"><i class="ti ti-file" style="font-size:32px;display:block;margin-bottom:8px"></i>Vista previa no disponible para este tipo de archivo</div>`;
+      }
+      descargarBtn.href = `/documentos/${id}/descargar`;
+      descargarBtn.style.display = '';
+    });
+}
+
+function cerrarPreview() {
+  document.getElementById('modal-preview').classList.remove('open');
+  previewDocId = null;
+}
+
+document.getElementById('preview-file-input').addEventListener('change', function () {
+  if (!previewDocId || !this.files[0]) return;
+  subirArchivo(previewDocId, this);
+});
+
+function subirArchivo(id, inputEl) {
+  const archivo = inputEl.files[0];
+  if (!archivo) return;
+  const form = new FormData();
+  form.append('archivo', archivo);
+  showToast('Subiendo archivo...');
+  fetch(`/documentos/${id}/archivo`, { method: 'POST', body: form })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        showToast('Archivo subido ✓');
+        setTimeout(() => location.reload(), 900);
+      } else {
+        showToast(data.error || 'Error al subir el archivo');
+      }
     });
 }
 </script>
