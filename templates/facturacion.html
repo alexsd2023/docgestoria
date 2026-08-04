@@ -7,7 +7,7 @@
   <div style="font-size:13px;color:var(--text-3)">
     {{ facturas|length }} factura{{ 's' if facturas|length != 1 else '' }}
   </div>
-  <button class="btn primary" onclick="showToast('Función de facturación próximamente')">
+  <button class="btn primary" onclick="abrirNuevaFactura()">
     <i class="ti ti-plus"></i>Nueva factura
   </button>
 </div>
@@ -16,23 +16,24 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Nº Factura</th><th>Cliente</th><th>Concepto</th><th>Fecha</th><th>Importe</th><th>Estado</th><th></th></tr>
+        <tr><th>Nº Factura</th><th>Cliente</th><th>Trámites</th><th>Fecha</th><th>Base</th><th>IVA</th><th>Total</th><th></th></tr>
       </thead>
       <tbody>
         {% for f in facturas %}
         <tr>
           <td style="font-family:monospace;font-size:12px">{{ f.numero }}</td>
           <td>{{ f.cliente }}</td>
-          <td>{{ f.concepto }}</td>
+          <td style="font-size:12px;color:var(--text-3)">{{ f.conceptos | join(', ') }}</td>
           <td style="color:var(--text-3);font-size:12px">{{ f.fecha }}</td>
-          <td>{{ f.importe }} €</td>
-          <td>{{ f.estado }}</td>
+          <td>{{ '%.2f'|format(f.base_imponible) }} €</td>
+          <td>{{ f.iva_porcentaje }}%</td>
+          <td style="font-weight:600">{{ '%.2f'|format(f.total) }} €</td>
           <td><button class="action-btn" onclick="showToast('Descargando...')">Descargar</button></td>
         </tr>
         {% endfor %}
         {% if not facturas %}
         <tr>
-          <td colspan="7" style="text-align:center;padding:40px;color:var(--text-3)">
+          <td colspan="8" style="text-align:center;padding:40px;color:var(--text-3)">
             <i class="ti ti-receipt-off" style="font-size:32px;display:block;margin-bottom:8px"></i>
             Todavía no hay facturas
           </td>
@@ -42,4 +43,134 @@
     </table>
   </div>
 </div>
+
+<!-- MODAL NUEVA FACTURA -->
+<div class="modal-overlay" id="modal-nueva-factura">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nueva factura</div>
+      <button class="modal-close" onclick="cerrarNuevaFactura()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Cliente</label>
+      <select class="form-select" id="nf-cliente" onchange="cambiarClienteFactura()">
+        <option value="">Selecciona un cliente...</option>
+        {% for c in clientes %}
+        <option value="{{ c.id }}" data-tramite="{{ c.tramite }}">{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Trámites realizados</label>
+      <div id="nf-tramites">
+        <div class="search-empty">Selecciona un cliente</div>
+      </div>
+    </div>
+
+    <div class="form-group" style="max-width:160px">
+      <label class="form-label">IVA</label>
+      <select class="form-select" id="nf-iva">
+        <option value="21">21%</option>
+        <option value="10">10%</option>
+      </select>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" onclick="cerrarNuevaFactura()">Cancelar</button>
+      <button class="btn primary" onclick="crearFactura()"><i class="ti ti-plus"></i>Crear factura</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function abrirNuevaFactura() {
+  document.getElementById('nf-cliente').value = '';
+  document.getElementById('nf-tramites').innerHTML = '<div class="search-empty">Selecciona un cliente</div>';
+  document.getElementById('nf-iva').value = '21';
+  document.getElementById('modal-nueva-factura').classList.add('open');
+}
+
+function cerrarNuevaFactura() {
+  document.getElementById('modal-nueva-factura').classList.remove('open');
+}
+
+function cambiarClienteFactura() {
+  const select = document.getElementById('nf-cliente');
+  const cont = document.getElementById('nf-tramites');
+  cont.innerHTML = '';
+
+  if (!select.value) {
+    cont.innerHTML = '<div class="search-empty">Selecciona un cliente</div>';
+    return;
+  }
+
+  const opt = select.options[select.selectedIndex];
+  const tramite = opt.dataset.tramite || 'Sin trámite asignado';
+
+  const row = document.createElement('label');
+  row.className = 'filter-check';
+  row.style.cssText = 'align-items:center;justify-content:space-between;gap:10px;padding:6px 2px';
+
+  const left = document.createElement('span');
+  left.style.cssText = 'display:flex;align-items:center;gap:7px';
+  const check = document.createElement('input');
+  check.type = 'checkbox';
+  check.className = 'nf-tramite-check';
+  check.checked = true;
+  check.value = tramite;
+  left.appendChild(check);
+  left.appendChild(document.createTextNode(tramite));
+
+  const importe = document.createElement('input');
+  importe.type = 'number';
+  importe.className = 'form-input nf-importe';
+  importe.placeholder = 'Importe €';
+  importe.style.width = '110px';
+  importe.min = '0';
+  importe.step = '0.01';
+
+  row.appendChild(left);
+  row.appendChild(importe);
+  cont.appendChild(row);
+}
+
+function crearFactura() {
+  const clienteId = document.getElementById('nf-cliente').value;
+  if (!clienteId) { showToast('Selecciona un cliente'); return; }
+
+  const lineas = [];
+  document.querySelectorAll('#nf-tramites .filter-check').forEach(fila => {
+    const check = fila.querySelector('.nf-tramite-check');
+    const importeInput = fila.querySelector('.nf-importe');
+    if (check && check.checked) {
+      const importe = parseFloat(importeInput.value || '0');
+      if (importe > 0) lineas.push({ concepto: check.value, importe });
+    }
+  });
+
+  if (lineas.length === 0) { showToast('Marca al menos un trámite con un importe mayor que 0'); return; }
+
+  const ivaPorcentaje = document.getElementById('nf-iva').value;
+
+  fetch('/facturacion/nueva', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cliente_id: clienteId, lineas, iva_porcentaje: ivaPorcentaje }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      cerrarNuevaFactura();
+      showToast('Factura ' + data.factura.numero + ' creada');
+      setTimeout(() => location.reload(), 900);
+    } else {
+      showToast(data.error || 'No se pudo crear la factura');
+    }
+  });
+}
+</script>
 {% endblock %}

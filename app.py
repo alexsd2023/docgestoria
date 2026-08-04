@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import data
 import catalogo
@@ -314,7 +316,55 @@ def vista_ajustes():
 
 @app.route("/facturacion")
 def vista_facturacion():
-    return render_template("facturacion.html", facturas=[], active="facturacion")
+    return render_template(
+        "facturacion.html",
+        facturas=data.listar_facturas(),
+        clientes=data.listar_clientes(),
+        active="facturacion",
+    )
+
+
+@app.route("/facturacion/nueva", methods=["POST"])
+def nueva_factura():
+    body = request.get_json() or {}
+
+    try:
+        cliente_id = int(body.get("cliente_id"))
+    except (TypeError, ValueError):
+        cliente_id = None
+    cliente = data.obtener_cliente(cliente_id) if cliente_id else None
+    if not cliente:
+        return jsonify({"ok": False, "error": "Selecciona un cliente"}), 400
+
+    lineas_in = body.get("lineas") or []
+    lineas = []
+    for linea in lineas_in:
+        concepto = (linea.get("concepto") or "").strip()
+        try:
+            importe = float(linea.get("importe") or 0)
+        except (TypeError, ValueError):
+            importe = 0
+        if concepto and importe > 0:
+            lineas.append({"concepto": concepto, "importe": importe})
+
+    if not lineas:
+        return jsonify({"ok": False, "error": "Selecciona al menos un trámite con importe"}), 400
+
+    try:
+        iva_porcentaje = int(body.get("iva_porcentaje", 21))
+    except (TypeError, ValueError):
+        iva_porcentaje = 21
+    if iva_porcentaje not in (10, 21):
+        iva_porcentaje = 21
+
+    factura = data.crear_factura(
+        cliente_id=cliente_id,
+        cliente=cliente["nombre"],
+        fecha=date.today().strftime("%d/%m/%Y"),
+        lineas=lineas,
+        iva_porcentaje=iva_porcentaje,
+    )
+    return jsonify({"ok": True, "factura": factura})
 
 
 if __name__ == "__main__":

@@ -231,3 +231,63 @@ def registrar_actividad(texto, tiempo, tipo="blue"):
             "insert into actividad (texto, tiempo, tipo) values (%s, %s, %s)",
             (texto, tiempo, tipo),
         )
+
+
+# ---------- facturación ----------
+
+def crear_factura(cliente_id, cliente, fecha, lineas, iva_porcentaje):
+    """Crea una factura con sus líneas. El número se autogenera de forma
+    secuencial a partir del id (FAC-000001, FAC-000002...)."""
+    base = round(sum(linea["importe"] for linea in lineas), 2)
+    iva_importe = round(base * iva_porcentaje / 100, 2)
+    total = round(base + iva_importe, 2)
+
+    with get_cursor() as cur:
+        cur.execute(
+            """
+            insert into facturas
+                (numero, cliente_id, cliente, fecha, base_imponible, iva_porcentaje, iva_importe, total)
+            values ('', %s, %s, %s, %s, %s, %s, %s)
+            returning id
+            """,
+            (cliente_id, cliente, fecha, base, iva_porcentaje, iva_importe, total),
+        )
+        factura_id = cur.fetchone()["id"]
+        numero = f"FAC-{factura_id:06d}"
+        cur.execute("update facturas set numero = %s where id = %s", (numero, factura_id))
+
+        for linea in lineas:
+            cur.execute(
+                "insert into factura_lineas (factura_id, concepto, importe) values (%s, %s, %s)",
+                (factura_id, linea["concepto"], linea["importe"]),
+            )
+
+    return {
+        "id": factura_id,
+        "numero": numero,
+        "cliente": cliente,
+        "fecha": fecha,
+        "base_imponible": base,
+        "iva_porcentaje": iva_porcentaje,
+        "iva_importe": iva_importe,
+        "total": total,
+    }
+
+
+def listar_facturas():
+    with get_cursor() as cur:
+        cur.execute("select * from facturas order by id desc")
+        facturas = cur.fetchall()
+        for factura in facturas:
+            cur.execute(
+                "select concepto from factura_lineas where factura_id = %s order by id",
+                (factura["id"],),
+            )
+            factura["conceptos"] = [fila["concepto"] for fila in cur.fetchall()]
+    return facturas
+
+
+def contar_facturas():
+    with get_cursor() as cur:
+        cur.execute("select count(*) as n from facturas")
+        return cur.fetchone()["n"]
