@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 import data
 import catalogo
 import storage
+import correo
 
 app = Flask(__name__)
 
@@ -79,7 +80,20 @@ def solicitar_documento(idx):
         fecha="Hoy",
         size="-",
     )
-    return jsonify({"ok": True, "documento": nuevo})
+
+    email_ok, email_error = correo.email_solicitud_documento(
+        cliente_nombre=cliente["nombre"],
+        cliente_email=cliente["email"],
+        tramite=cliente["tramite"],
+        tipo_documento=tipo,
+    )
+
+    return jsonify({
+        "ok": True,
+        "documento": nuevo,
+        "email_enviado": email_ok,
+        "email_error": None if email_ok else email_error,
+    })
 
 
 @app.route("/clientes/<int:idx>/documentos/subir", methods=["POST"])

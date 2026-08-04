@@ -38,9 +38,13 @@ function solicitarDocumento(clienteId, btn) {
     body: JSON.stringify({ tipo }),
   })
   .then(r => r.json())
-  .then(() => {
-    showToast('Documento solicitado: ' + tipo);
-    setTimeout(() => location.reload(), 900);
+  .then(data => {
+    if (data.email_enviado) {
+      showToast('Solicitado y email enviado al cliente ✓');
+    } else {
+      showToast('Documento solicitado, pero el email falló: ' + (data.email_error || 'error desconocido'));
+    }
+    setTimeout(() => location.reload(), 1400);
   });
 }
 
