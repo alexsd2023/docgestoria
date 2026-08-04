@@ -169,3 +169,20 @@ tbody td { padding: 11px 16px; font-size: 13px; color: var(--text); vertical-ali
 .flash { padding: 10px 14px; border-radius: var(--radius); margin-bottom: 16px; font-size: 13px; }
 .flash-success { background: var(--green-light); color: var(--green-dark); }
 .flash-error { background: var(--red-light); color: var(--red); }
+
+.filter-dropdown { position: relative; }
+.filter-dropdown summary { list-style: none; }
+.filter-dropdown summary::-webkit-details-marker { display: none; }
+.filter-dropdown summary::after { content: '\25BE'; margin-left: 6px; font-size: 10px; }
+.filter-dropdown[open] summary { background: var(--bg); }
+.filter-panel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 12px; width: 300px; max-height: 380px; overflow-y: auto; }
+.filter-panel-actions { display: flex; gap: 10px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.filter-link { background: none; border: none; color: var(--blue); font-size: 12px; cursor: pointer; padding: 0; font-family: inherit; }
+.filter-link:hover { text-decoration: underline; }
+.filter-group { margin-bottom: 10px; }
+.filter-group:last-child { margin-bottom: 0; }
+.filter-group-title { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 4px; }
+.filter-check { display: flex; align-items: center; gap: 7px; font-size: 13px; padding: 3px 2px; cursor: pointer; color: var(--text-2); border-radius: 4px; }
+.filter-check:hover { background: var(--bg); }
+.filter-check input { accent-color: var(--blue); }
+.filter-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 4px; background: var(--blue); color: #fff; border-radius: 10px; font-size: 10px; margin-left: 4px; }

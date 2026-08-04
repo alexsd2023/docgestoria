@@ -117,7 +117,12 @@ def rechazar_doc(idx):
 @app.route("/expedientes")
 def vista_expedientes():
     clientes = data.listar_clientes()
-    return render_template("expedientes.html", clientes=clientes, active="expedientes")
+    return render_template(
+        "expedientes.html",
+        clientes=clientes,
+        grupos_tramites=catalogo.GRUPOS_TRAMITES,
+        active="expedientes",
+    )
 
 
 @app.route("/notificaciones")

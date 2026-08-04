@@ -352,3 +352,69 @@ TRAMITES_DOCUMENTOS = {
 
 def documentos_requeridos(tramite):
     return TRAMITES_DOCUMENTOS.get(tramite, [])
+
+
+# Misma agrupación que el desplegable "Tipo de trámite" (templates/base.html),
+# reutilizada aquí para construir el filtro de Expedientes por checkboxes.
+GRUPOS_TRAMITES = [
+    ("General", [
+        "Constitución S.L.",
+        "Declaración renta",
+        "Autónomo alta",
+        "Herencia",
+        "Compraventa inmueble",
+    ]),
+    ("Extranjería · NIE y Registro UE", [
+        "Obtención de NIE",
+        "Certificado de Registro de la UE",
+        "Tarjeta de Familiar de Ciudadano de la UE",
+        "Empadronamiento",
+    ]),
+    ("Extranjería · Residencia", [
+        "Residencia Temporal No Lucrativa",
+        "Residencia y Trabajo por Cuenta Ajena",
+        "Personal Altamente Cualificado",
+        "Residencia y Trabajo por Cuenta Propia",
+        "Residencia por Circunstancias Excepcionales",
+        "Residencia de Larga Duración",
+        "Reagrupación Familiar",
+    ]),
+    ("Arraigos", [
+        "Arraigo Social",
+        "Arraigo Laboral",
+        "Arraigo Familiar",
+        "Arraigo para la Formación",
+    ]),
+    ("Estudiantes", [
+        "Estancia por Estudios",
+        "Visado de Estudios",
+        "Prácticas No Laborales y Formativas",
+        "Modificación de Residencia y Trabajo",
+        "Permiso de Trabajo Implícito",
+    ]),
+    ("Nacionalidad", [
+        "Nacionalidad por Residencia",
+        "Nacionalidad por Carta de Naturaleza",
+        "Pruebas CCSE y DELE",
+        "Ley de Memoria Democrática",
+    ]),
+    ("Recursos y Reclamaciones", [
+        "Recurso de Reposición",
+        "Recurso de Alzada",
+        "Recurso Contencioso-Administrativo",
+        "Reclamaciones por Silencio Administrativo",
+    ]),
+    ("Tráfico", [
+        "Transferencia y Cambio de Titularidad",
+        "Matriculación de Vehículos Nuevos",
+        "Duplicados de Permiso de Circulación y Conducir",
+        "Bajas de Vehículos",
+        "Informes y Notificaciones DGT",
+        "Cambios Técnicos y Reformas",
+    ]),
+    ("Otros", ["Otro"]),
+]
+
+
+def todos_los_tramites():
+    return [t for _, tramites in GRUPOS_TRAMITES for t in tramites]

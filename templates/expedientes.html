@@ -2,15 +2,56 @@
 {% block title %}Expedientes{% endblock %}
 {% block page_title %}Expedientes{% endblock %}
 {% block content %}
+
+<div class="page-toolbar">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <details class="filter-dropdown" id="dd-tramites">
+      <summary class="btn"><i class="ti ti-filter"></i>Trámites<span class="filter-badge" id="tramite-badge" style="display:none"></span></summary>
+      <div class="filter-panel">
+        <div class="filter-panel-actions">
+          <button type="button" class="filter-link" onclick="marcarTodos('.f-tramite-check', true)">Todos</button>
+          <button type="button" class="filter-link" onclick="marcarTodos('.f-tramite-check', false)">Ninguno</button>
+        </div>
+        {% for grupo, tramites in grupos_tramites %}
+        <div class="filter-group">
+          <div class="filter-group-title">{{ grupo }}</div>
+          {% for t in tramites %}
+          <label class="filter-check">
+            <input type="checkbox" class="f-tramite-check" value="{{ t }}" checked onchange="aplicarFiltrosExpedientes()">
+            {{ t }}
+          </label>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+
+    <details class="filter-dropdown" id="dd-estados">
+      <summary class="btn"><i class="ti ti-filter"></i>Estado<span class="filter-badge" id="estado-badge" style="display:none"></span></summary>
+      <div class="filter-panel" style="width:180px">
+        <div class="filter-panel-actions">
+          <button type="button" class="filter-link" onclick="marcarTodos('.f-estado-check', true)">Todos</button>
+          <button type="button" class="filter-link" onclick="marcarTodos('.f-estado-check', false)">Ninguno</button>
+        </div>
+        <label class="filter-check"><input type="checkbox" class="f-estado-check" value="pendiente" checked onchange="aplicarFiltrosExpedientes()"> Pendiente</label>
+        <label class="filter-check"><input type="checkbox" class="f-estado-check" value="en-curso" checked onchange="aplicarFiltrosExpedientes()"> En curso</label>
+        <label class="filter-check"><input type="checkbox" class="f-estado-check" value="completado" checked onchange="aplicarFiltrosExpedientes()"> Completado</label>
+      </div>
+    </details>
+  </div>
+  <span id="filter-resumen" style="font-size:12px;color:var(--text-3)"></span>
+</div>
+
 <div class="card">
   <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Referencia</th><th>Cliente</th><th>Trámite</th><th>Inicio</th><th>Estado</th></tr>
       </thead>
-      <tbody>
+      <tbody id="tabla-expedientes">
         {% for c in clientes %}
-        <tr onclick="window.location='{{ url_for('detalle_cliente', idx=c.id) }}'" style="cursor:pointer">
+        <tr data-tramite="{{ c.tramite }}" data-estado="{{ c.estado }}"
+            onclick="window.location='{{ url_for('detalle_cliente', idx=c.id) }}'" style="cursor:pointer">
           <td style="font-family:monospace;font-size:12px">#EXP-2025-0{{ 20 + loop.index }}</td>
           <td>
             <div class="client-cell">
@@ -23,8 +64,65 @@
           <td>{% include "partials/badge.html" %}</td>
         </tr>
         {% endfor %}
+        <tr id="sin-resultados" style="display:none">
+          <td colspan="5" style="text-align:center;padding:40px;color:var(--text-3)">
+            <i class="ti ti-filter-off" style="font-size:28px;display:block;margin-bottom:6px"></i>
+            Ningún expediente coincide con los filtros seleccionados
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function marcarTodos(selector, valor) {
+  document.querySelectorAll(selector).forEach(cb => { cb.checked = valor; });
+  aplicarFiltrosExpedientes();
+}
+
+function aplicarFiltrosExpedientes() {
+  const tramitesChecks = document.querySelectorAll('.f-tramite-check');
+  const estadosChecks = document.querySelectorAll('.f-estado-check');
+  const tramitesOn = new Set(Array.from(tramitesChecks).filter(cb => cb.checked).map(cb => cb.value));
+  const estadosOn = new Set(Array.from(estadosChecks).filter(cb => cb.checked).map(cb => cb.value));
+
+  const filas = document.querySelectorAll('#tabla-expedientes tr[data-tramite]');
+  let visibles = 0;
+  filas.forEach(fila => {
+    const mostrar = tramitesOn.has(fila.dataset.tramite) && estadosOn.has(fila.dataset.estado);
+    fila.style.display = mostrar ? '' : 'none';
+    if (mostrar) visibles++;
+  });
+
+  document.getElementById('sin-resultados').style.display = visibles === 0 ? '' : 'none';
+  document.getElementById('filter-resumen').textContent = `${visibles} de ${filas.length} expedientes`;
+
+  const tramiteBadge = document.getElementById('tramite-badge');
+  if (tramitesOn.size < tramitesChecks.length) {
+    tramiteBadge.textContent = tramitesOn.size;
+    tramiteBadge.style.display = '';
+  } else {
+    tramiteBadge.style.display = 'none';
+  }
+
+  const estadoBadge = document.getElementById('estado-badge');
+  if (estadosOn.size < estadosChecks.length) {
+    estadoBadge.textContent = estadosOn.size;
+    estadoBadge.style.display = '';
+  } else {
+    estadoBadge.style.display = 'none';
+  }
+}
+
+document.addEventListener('click', function (e) {
+  document.querySelectorAll('.filter-dropdown[open]').forEach(function (d) {
+    if (!d.contains(e.target)) d.removeAttribute('open');
+  });
+});
+
+document.addEventListener('DOMContentLoaded', aplicarFiltrosExpedientes);
+</script>
 {% endblock %}
